@@ -1,6 +1,8 @@
 package ch.uzh.ifi.hase.soprafs22.controller;
 
 import ch.uzh.ifi.hase.soprafs22.entity.User;
+import ch.uzh.ifi.hase.soprafs22.rest.dto.FullUserGetDTO;
+import ch.uzh.ifi.hase.soprafs22.rest.dto.LoginUserPostDTO;
 import ch.uzh.ifi.hase.soprafs22.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs22.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs22.rest.mapper.DTOMapper;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * User Controller
@@ -55,4 +58,24 @@ public class UserController {
     // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
+
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public UserGetDTO loginUser(@RequestBody LoginUserPostDTO loginUserPostDTO) {
+        // convert API user to internal representation
+        User userInput = DTOMapper.INSTANCE.convertLoginUserPostDTOtoEntity(loginUserPostDTO);
+
+        // check login credentials and if correct, provide entire user data
+        User userData = userService.loginCredentials(userInput);
+        // convert internal representation of user back to API
+        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userData);
+    }
+
+    @GetMapping(value = "/users/{id}")
+    @ResponseBody
+    public FullUserGetDTO getUserbyUserID(@PathVariable("id") long id) {
+      User userData = userService.getUserbyUserID(id);
+      return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(userData);
+    }
 }

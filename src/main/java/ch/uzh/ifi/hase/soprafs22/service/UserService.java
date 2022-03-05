@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs22.service;
 import ch.uzh.ifi.hase.soprafs22.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs22.entity.User;
 import ch.uzh.ifi.hase.soprafs22.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs22.utils.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -41,9 +41,9 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
-    String timestamp = Time.getCurrentTime();
-
-    newUser.setTimestamp(timestamp);
+    //String timestamp = Time.getCurrentTime();
+    Date date = new Date();
+    newUser.setCreation_date(date);
     newUser.setToken(UUID.randomUUID().toString());
     newUser.setStatus(UserStatus.OFFLINE);
 
@@ -75,5 +75,33 @@ public class UserService {
     if (userByUsername != null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
     }
+  }
+  public User loginCredentials(User user) {
+      String username = user.getUsername();
+      String password = user.getPassword();
+      User userByUsername = userRepository.findByUsername(username);
+
+      String uniqueErrorMessage = "%s username not found. Please register!";
+      if (userByUsername == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, username));
+      }
+
+      String savedPassword = userByUsername.getPassword();
+
+      String passwordErrorMessage = "Password incorrect! Try again!";
+      if (!password.equals(savedPassword)) {
+          throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, String.format(passwordErrorMessage));
+      }
+      return userByUsername;
+  }
+
+  public User getUserbyUserID(Long id) {
+      User userById = userRepository.findByid(id);
+
+      String uniqueErrorMessage = "User with %s not found!";
+      if (userById == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, id));
+      }
+      return userById;
   }
 }
