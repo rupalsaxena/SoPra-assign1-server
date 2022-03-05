@@ -25,7 +25,7 @@ public class User implements Serializable {
   @GeneratedValue
   private Long id;
 
-  @Column(nullable = false)
+  @Column
   private String name;
 
   @Column(nullable = false, unique = true)
@@ -36,6 +36,12 @@ public class User implements Serializable {
 
   @Column(nullable = false)
   private UserStatus status;
+
+  @Column(nullable = false)
+  private String password;
+
+  @Column(nullable = false)
+  private String timestamp;
 
   public Long getId() {
     return id;
@@ -61,6 +67,10 @@ public class User implements Serializable {
     this.username = username;
   }
 
+  public String getPassword() {return password;}
+
+  public void setPassword(String password) {this.password = password;}
+
   public String getToken() {
     return token;
   }
@@ -76,4 +86,8 @@ public class User implements Serializable {
   public void setStatus(UserStatus status) {
     this.status = status;
   }
+
+  public String getTimestamp() {return timestamp;}
+
+  public void setTimestamp(String timestamp) {this.timestamp = timestamp;}
 }
