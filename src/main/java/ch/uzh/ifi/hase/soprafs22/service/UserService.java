@@ -41,11 +41,10 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
-    //String timestamp = Time.getCurrentTime();
     Date date = new Date();
     newUser.setCreation_date(date);
     newUser.setToken(UUID.randomUUID().toString());
-    newUser.setStatus(UserStatus.OFFLINE);
+    newUser.setStatus(UserStatus.ONLINE);
 
     checkIfUserExists(newUser);
 
@@ -92,6 +91,7 @@ public class UserService {
       if (!password.equals(savedPassword)) {
           throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, String.format(passwordErrorMessage));
       }
+      userByUsername.setStatus(UserStatus.ONLINE);
       return userByUsername;
   }
 
@@ -123,6 +123,12 @@ public class UserService {
       if (birthday != null) {
           userbyID.setBirthday(birthday);
       }
+      return userbyID;
+  }
+
+  public User logoutUserbyUserID(Long userid) {
+      User userbyID = userRepository.findByid(userid);
+      userbyID.setStatus(UserStatus.OFFLINE);
       return userbyID;
   }
 }
