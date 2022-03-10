@@ -1,10 +1,7 @@
 package ch.uzh.ifi.hase.soprafs22.controller;
 
 import ch.uzh.ifi.hase.soprafs22.entity.User;
-import ch.uzh.ifi.hase.soprafs22.rest.dto.FullUserGetDTO;
-import ch.uzh.ifi.hase.soprafs22.rest.dto.LoginUserPostDTO;
-import ch.uzh.ifi.hase.soprafs22.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs22.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs22.rest.dto.*;
 import ch.uzh.ifi.hase.soprafs22.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs22.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -30,6 +27,7 @@ public class UserController {
     this.userService = userService;
   }
 
+  // get api to get all users
   @GetMapping("/users")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
@@ -45,6 +43,7 @@ public class UserController {
     return userGetDTOs;
   }
 
+  // post api to register
   @PostMapping("/users")
   @ResponseStatus(HttpStatus.CREATED)
   @ResponseBody
@@ -59,6 +58,7 @@ public class UserController {
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
 
+    // post api for login
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -72,10 +72,21 @@ public class UserController {
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userData);
     }
 
+    // get api for get full user information by userid
     @GetMapping(value = "/users/{id}")
     @ResponseBody
     public FullUserGetDTO getUserbyUserID(@PathVariable("id") long id) {
       User userData = userService.getUserbyUserID(id);
       return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(userData);
     }
+
+    // put api for editing user
+    @PutMapping(value = "/users/{id}")
+    @ResponseBody
+    public FullUserGetDTO editUser(@RequestBody EditUserPutDTO editUserPutDTO, @PathVariable("id") Long id) {
+        User editUser = DTOMapper.INSTANCE.convertEditUserPutDTOtoEntity(editUserPutDTO);
+        editUser.setId(id);
+        User editedUser = userService.editUserbyUserID(editUser);
+        return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(editedUser);
+  }
 }

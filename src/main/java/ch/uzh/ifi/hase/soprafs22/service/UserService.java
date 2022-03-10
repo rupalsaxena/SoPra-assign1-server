@@ -104,4 +104,25 @@ public class UserService {
       }
       return userById;
   }
+
+  public User editUserbyUserID(User user) {
+      Long userid = user.getId();
+      String username = user.getUsername();
+      Date birthday = user.getBirthday();
+
+      User userbyID = userRepository.findByid(userid);
+
+      String uniqueErrorMessage = "%s user id not found. Please register!";
+      if (userbyID == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, userid));
+      }
+
+      if (username != null) {
+          userbyID.setUsername(username);
+      }
+      if (birthday != null) {
+          userbyID.setBirthday(birthday);
+      }
+      return userbyID;
+  }
 }
