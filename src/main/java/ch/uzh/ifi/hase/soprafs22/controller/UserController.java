@@ -24,7 +24,7 @@ public class UserController {
     this.userService = userService;
     }
 
-    // get api to get all users
+    // Get all users
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -40,36 +40,27 @@ public class UserController {
         return userGetDTOs;
     }
 
-    // post api to register
+    // Register: Post API to create new user.
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
-        // convert API user to internal representation
+    public FullUserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
-
-        // create user
         User createdUser = userService.createUser(userInput);
-
-        // convert internal representation of user back to API
-        return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+        return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(createdUser);
     }
 
-    // post api for login
+    // Login: Post API to login user.
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public UserGetDTO loginUser(@RequestBody LoginUserPostDTO loginUserPostDTO) {
-        // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertLoginUserPostDTOtoEntity(loginUserPostDTO);
-
-        // check login credentials and if correct, provide entire user data
         User userData = userService.loginCredentials(userInput);
-        // convert internal representation of user back to API
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userData);
     }
 
-    // get api for get full user information by userid
+    // Retrieve user profile from userid
     @GetMapping(value = "/users/{id}")
     @ResponseBody
     public FullUserGetDTO getUserbyUserID(@PathVariable("id") long id) {
@@ -77,16 +68,17 @@ public class UserController {
       return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(userData);
     }
 
-    // put api for editing user
+    // Edit/Update user profile
     @PutMapping(value = "/users/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public FullUserGetDTO editUser(@RequestBody EditUserPutDTO editUserPutDTO, @PathVariable("id") Long id) {
+    public void editUser(@RequestBody EditUserPutDTO editUserPutDTO, @PathVariable("id") Long id) {
         User editUser = DTOMapper.INSTANCE.convertEditUserPutDTOtoEntity(editUserPutDTO);
         editUser.setId(id);
-        User editedUser = userService.editUserbyUserID(editUser);
-        return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(editedUser);
+        User edited_user = userService.editUserbyUserID(editUser);
   }
-    // put api for logout userstatus update
+
+    // Logout: Change status of profile
     @PutMapping(value = "/logout/{id}")
     @ResponseBody
     public FullUserGetDTO logoutUser(@PathVariable("id") Long id) {

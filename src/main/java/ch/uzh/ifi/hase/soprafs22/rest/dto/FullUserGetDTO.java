@@ -6,7 +6,6 @@ import java.util.Date;
 
 public class FullUserGetDTO {
     private Long id;
-    private String name;
     private String username;
     private UserStatus status;
     private Date creation_date;
@@ -18,14 +17,6 @@ public class FullUserGetDTO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getUsername() {

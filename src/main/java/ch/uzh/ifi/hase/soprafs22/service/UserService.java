@@ -67,14 +67,16 @@ public class UserService {
    * @throws org.springframework.web.server.ResponseStatusException
    * @see User
    */
+
   private void checkIfUserExists(User userToBeCreated) {
     User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
     String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
     if (userByUsername != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+        throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username", "is"));
     }
   }
+
   public User loginCredentials(User user) {
       String username = user.getUsername();
       String password = user.getPassword();
@@ -98,7 +100,7 @@ public class UserService {
   public User getUserbyUserID(Long id) {
       User userById = userRepository.findByid(id);
 
-      String uniqueErrorMessage = "User with %s not found!";
+      String uniqueErrorMessage = "User with user id %s not found!";
       if (userById == null) {
           throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, id));
       }
@@ -112,7 +114,7 @@ public class UserService {
 
       User userbyID = userRepository.findByid(userid);
 
-      String uniqueErrorMessage = "%s user id not found. Please register!";
+      String uniqueErrorMessage = "User with user id %s not found!";
       if (userbyID == null) {
           throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, userid));
       }

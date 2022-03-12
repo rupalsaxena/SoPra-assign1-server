@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs22.rest.dto;
 
 public class LoginUserPostDTO {
     private String username;
-
     private String password;
 
     public String getUsername() {
