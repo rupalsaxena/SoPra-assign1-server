@@ -3,7 +3,6 @@ package ch.uzh.ifi.hase.soprafs22.service;
 import ch.uzh.ifi.hase.soprafs22.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs22.entity.User;
 import ch.uzh.ifi.hase.soprafs22.repository.UserRepository;
-import ch.uzh.ifi.hase.soprafs22.utils.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -41,11 +41,10 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
-    String timestamp = Time.getCurrentTime();
-
-    newUser.setTimestamp(timestamp);
+    Date date = new Date();
+    newUser.setCreation_date(date);
     newUser.setToken(UUID.randomUUID().toString());
-    newUser.setStatus(UserStatus.OFFLINE);
+    newUser.setStatus(UserStatus.ONLINE);
 
     checkIfUserExists(newUser);
 
@@ -68,12 +67,75 @@ public class UserService {
    * @throws org.springframework.web.server.ResponseStatusException
    * @see User
    */
+
   private void checkIfUserExists(User userToBeCreated) {
     User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
     String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
     if (userByUsername != null) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "username", "is"));
+        throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(baseErrorMessage, "username", "is"));
     }
+  }
+
+  public User loginCredentials(User user) {
+      String username = user.getUsername();
+      String password = user.getPassword();
+      User userByUsername = userRepository.findByUsername(username);
+
+      String uniqueErrorMessage = "%s username not found. Please register!";
+      if (userByUsername == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, username));
+      }
+
+      String savedPassword = userByUsername.getPassword();
+
+      String passwordErrorMessage = "Password incorrect! Try again!";
+      if (!password.equals(savedPassword)) {
+          throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, String.format(passwordErrorMessage));
+      }
+      userByUsername.setStatus(UserStatus.ONLINE);
+      return userByUsername;
+  }
+
+  public User getUserbyUserID(Long id) {
+      User userById = userRepository.findByid(id);
+
+      String uniqueErrorMessage = "User with user id %s not found!";
+      if (userById == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, id));
+      }
+      return userById;
+  }
+
+  public User editUserbyUserID(User user) {
+      Long userid = user.getId();
+      String username = user.getUsername();
+      Date birthday = user.getBirthday();
+
+      User userbyID = userRepository.findByid(userid);
+
+      String notFoundErrorMessage = "User with user id %s not found!";
+      if (userbyID == null) {
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(notFoundErrorMessage, userid));
+      }
+
+      String uniqueErrorMessage = "Username already exist";
+      if (username.equals(userbyID.getUsername())) {
+          throw new ResponseStatusException(HttpStatus.CONFLICT);
+      }
+
+      if (username != null) {
+          userbyID.setUsername(username);
+      }
+      if (birthday != null) {
+          userbyID.setBirthday(birthday);
+      }
+      return userbyID;
+  }
+
+  public User logoutUserbyUserID(Long userid) {
+      User userbyID = userRepository.findByid(userid);
+      userbyID.setStatus(UserStatus.OFFLINE);
+      return userbyID;
   }
 }
