@@ -24,7 +24,9 @@ public class UserController {
     this.userService = userService;
     }
 
-    // Get all users
+    /*
+    Get all users
+    */
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -40,7 +42,9 @@ public class UserController {
         return userGetDTOs;
     }
 
-    // Register: Post API to create new user.
+    /*
+    Register: Post API to create new user
+     */
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
@@ -50,7 +54,9 @@ public class UserController {
         return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(createdUser);
     }
 
-    // Login: Post API to login user.
+    /*
+    Login: Post API to login user
+     */
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -60,7 +66,9 @@ public class UserController {
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(userData);
     }
 
-    // Retrieve user profile from userid
+    /*
+    Retrieve user profile from userid
+     */
     @GetMapping(value = "/users/{id}")
     @ResponseBody
     public FullUserGetDTO getUserbyUserID(@PathVariable("id") long id) {
@@ -68,7 +76,9 @@ public class UserController {
       return DTOMapper.INSTANCE.convertEntityToFullUserGetDTO(userData);
     }
 
-    // Edit/Update user profile
+    /*
+    Edit/Update user profile
+     */
     @PutMapping(value = "/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
@@ -78,7 +88,9 @@ public class UserController {
         User edited_user = userService.editUserbyUserID(editUser);
   }
 
-    // Logout: Change status of profile
+    /*
+    Logout: Change status of profile
+     */
     @PutMapping(value = "/logout/{id}")
     @ResponseBody
     public FullUserGetDTO logoutUser(@PathVariable("id") Long id) {

@@ -19,10 +19,9 @@ import java.util.UUID;
 /**
  * User Service
  * This class is the "worker" and responsible for all functionality related to
- * the user
- * (e.g., it creates, modifies, deletes, finds). The result will be passed back
- * to the caller.
+ * the user.
  */
+
 @Service
 @Transactional
 public class UserService {
@@ -41,6 +40,7 @@ public class UserService {
   }
 
   public User createUser(User newUser) {
+      // creates User. Also checks if user exists.
     Date date = new Date();
     newUser.setCreation_date(date);
     newUser.setToken(UUID.randomUUID().toString());
@@ -48,27 +48,13 @@ public class UserService {
 
     checkIfUserExists(newUser);
 
-    // saves the given entity but data is only persisted in the database once
-    // flush() is called
     newUser = userRepository.save(newUser);
     userRepository.flush();
-
-    log.debug("Created Information for User: {}", newUser);
     return newUser;
   }
 
-  /**
-   * This is a helper method that will check the uniqueness criteria of the
-   * username and the name
-   * defined in the User entity. The method will do nothing if the input is unique
-   * and throw an error otherwise.
-   *
-   * @param userToBeCreated
-   * @throws org.springframework.web.server.ResponseStatusException
-   * @see User
-   */
-
   private void checkIfUserExists(User userToBeCreated) {
+      // This is a helper method. It checks uniqueness of username.
     User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 
     String baseErrorMessage = "The %s provided %s not unique. Therefore, the user could not be created!";
@@ -78,6 +64,9 @@ public class UserService {
   }
 
   public User loginCredentials(User user) {
+      // This method check if username and password provided by user is correct.
+      // Throws exception in case of discrepancies.
+      // If username, password correct, returns user information.
       String username = user.getUsername();
       String password = user.getPassword();
       User userByUsername = userRepository.findByUsername(username);
@@ -98,6 +87,9 @@ public class UserService {
   }
 
   public User getUserbyUserID(Long id) {
+      // Input: id
+      // Returns: User information of given user id
+      // Throws: Throws NOT FOUND exception in case given user id not found
       User userById = userRepository.findByid(id);
 
       String uniqueErrorMessage = "User with user id %s not found!";
@@ -108,6 +100,10 @@ public class UserService {
   }
 
   public User editUserbyUserID(User user) {
+      // Input: user information to be edited
+      // Functionality: Edit the user information
+      // Return: Edited user information
+      // Throws: NOT FOUND and CONFLICT exceptions
       Long userid = user.getId();
       String username = user.getUsername();
       Date birthday = user.getBirthday();
@@ -121,7 +117,7 @@ public class UserService {
 
       String uniqueErrorMessage = "Username already exist";
       if (username.equals(userbyID.getUsername())) {
-          throw new ResponseStatusException(HttpStatus.CONFLICT);
+          throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(uniqueErrorMessage));
       }
 
       if (username != null) {
@@ -134,6 +130,9 @@ public class UserService {
   }
 
   public User logoutUserbyUserID(Long userid) {
+      // Input: user id
+      // Function: Change online status to offline
+      // Return: Edited user information
       User userbyID = userRepository.findByid(userid);
       userbyID.setStatus(UserStatus.OFFLINE);
       return userbyID;
