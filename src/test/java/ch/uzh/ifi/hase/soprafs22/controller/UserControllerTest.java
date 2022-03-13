@@ -25,7 +25,6 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,9 +44,9 @@ public class UserControllerTest {
   @MockBean
   private UserService userService;
 
+  // GET: get all the users
   @Test
   public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
-      // Test:
     // given
     User user = new User();
     user.setName("Firstname Lastname");
@@ -71,6 +70,7 @@ public class UserControllerTest {
         .andExpect(jsonPath("$[0].status", is(user.getStatus().toString())));
   }
 
+  // POST: Register step; Create new user
   @Test
   public void createUser_validInput_userCreated() throws Exception {
     // given
@@ -79,11 +79,13 @@ public class UserControllerTest {
     user.setName("Test User");
     user.setUsername("testUsername");
     user.setToken("1");
+    user.setPassword("testPassword");
     user.setStatus(UserStatus.ONLINE);
 
     UserPostDTO userPostDTO = new UserPostDTO();
     userPostDTO.setName("Test User");
     userPostDTO.setUsername("testUsername");
+    userPostDTO.setPassword("testPassword");
 
     given(userService.createUser(Mockito.any())).willReturn(user);
 
@@ -100,6 +102,7 @@ public class UserControllerTest {
         .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
+  // POST: Test for Login step
   @Test
   public void givenUser_validlogin_thenReturnUser() throws Exception {
       User user = new User();
@@ -133,6 +136,7 @@ public class UserControllerTest {
               .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
+  // GET: Retrieve user profile from user id
   @Test
   public void givenUser_whenUserId_ReturnFullUserInfo() throws Exception {
       // TODO: date issue fix
@@ -162,6 +166,7 @@ public class UserControllerTest {
               //.andExpect(jsonPath("$.birthday", is(user.getBirthday().toString())));
   }
 
+  // PUT: Test for Edit/Update User Profile
   @Test
   public void givenUser_whenEdit_ReturnEdited() throws Exception {
       User user = new User();
@@ -192,6 +197,7 @@ public class UserControllerTest {
               .andExpect(status().isNoContent());
   }
 
+    // PUT: Test to Logout User
   @Test
   public void GivenId_whenlogout_OfflineStatus() throws Exception {
       User user = new User();
@@ -211,6 +217,61 @@ public class UserControllerTest {
               .andExpect(jsonPath("$.status", is(user.getStatus().toString())));
   }
 
+    // POST: add User failed because username already exists
+    @Test
+    public void doubledUser_validInput_throwexceptions() throws Exception {
+      // given
+      UserPostDTO userPostDTO = new UserPostDTO();
+      userPostDTO.setName("Test User");
+      userPostDTO.setUsername("testUsername");
+      userPostDTO.setPassword("testPassword");
+      given(userService.createUser(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+
+        // when/then -> do the request + validate the result
+      MockHttpServletRequestBuilder postRequest = post("/users")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(userPostDTO));
+
+      // then
+      mockMvc.perform(postRequest)
+            .andExpect(status().isConflict());
+    }
+
+    // GET: user with userId was not found
+    @Test
+    public void givenId_IdNotFound_throwexception() throws Exception {
+      //given
+        given(userService.getUserbyUserID(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // when
+        MockHttpServletRequestBuilder getRequest = get("/users/1")
+                .contentType(MediaType.APPLICATION_JSON);
+
+        // then
+        mockMvc.perform(getRequest)
+                .andExpect(status().isNotFound());
+    }
+
+    // PUT: update user profile but userid not found!!
+    @Test
+    public void givenId_attemptedit_IdNotFound() throws Exception {
+      // given$
+        Date date = new Date();
+        EditUserPutDTO editUserPutDTO = new EditUserPutDTO();
+        editUserPutDTO.setUsername("SoPra@yahoo.com");
+        editUserPutDTO.setBirthday(date);
+        given(userService.editUserbyUserID(Mockito.any())).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+
+        // when
+        MockHttpServletRequestBuilder putRequest = put("/users/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(editUserPutDTO));
+
+        // then
+        mockMvc.perform(putRequest)
+                .andExpect(status().isNotFound());
+    }
   /**
    * Helper Method to convert userPostDTO into a JSON string such that the input
    * can be processed

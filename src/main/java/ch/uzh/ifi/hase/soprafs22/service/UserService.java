@@ -114,9 +114,14 @@ public class UserService {
 
       User userbyID = userRepository.findByid(userid);
 
-      String uniqueErrorMessage = "User with user id %s not found!";
+      String notFoundErrorMessage = "User with user id %s not found!";
       if (userbyID == null) {
-          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(uniqueErrorMessage, userid));
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(notFoundErrorMessage, userid));
+      }
+
+      String uniqueErrorMessage = "Username already exist";
+      if (username.equals(userbyID.getUsername())) {
+          throw new ResponseStatusException(HttpStatus.CONFLICT);
       }
 
       if (username != null) {
