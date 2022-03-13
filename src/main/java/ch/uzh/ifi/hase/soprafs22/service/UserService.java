@@ -116,7 +116,8 @@ public class UserService {
       }
 
       String uniqueErrorMessage = "Username already exist";
-      if (username.equals(userbyID.getUsername())) {
+      String data_username = userbyID.getUsername();
+      if (data_username.equals(username)) {
           throw new ResponseStatusException(HttpStatus.CONFLICT, String.format(uniqueErrorMessage));
       }
 
